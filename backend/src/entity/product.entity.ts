@@ -45,11 +45,4 @@ export class Product {
     this.height = height;
     this.weight = weight;
   }
-
-  addComment(comment: Commend) {
-    if (this.comments) {
-      this.comments.push(comment);
-    }
-    this.comments = [comment];
-  }
 }

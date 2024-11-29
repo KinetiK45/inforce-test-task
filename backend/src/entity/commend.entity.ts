@@ -17,6 +17,7 @@ export class Commend {
   date: Date;
   @ManyToOne(() => Product, (product) => product.comments, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn()
   product: Product;

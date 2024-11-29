@@ -11,7 +11,6 @@ import {
 import { AppService } from './app.service';
 import { ProductDto } from './dto/product.dto';
 import { UpdateProductDto } from './dto/update.product.dto';
-import { CreateCommentDto } from './dto/create.comment.dto';
 
 @Controller()
 export class AppController {
@@ -50,11 +49,16 @@ export class AppController {
     return await this.appService.deleteProduct(product_id);
   }
 
+  @Delete('comments/:comment_id')
+  async deleteComment(@Param('comment_id') product_id: number) {
+    return await this.appService.deleteComment(product_id);
+  }
+
   @Post('products/:product_id/comments')
   async createComment(
     @Param('product_id') product_id: number,
-    @Body() createCommentDto: CreateCommentDto,
+    @Body() description: string,
   ) {
-    return await this.appService.createComment(product_id, createCommentDto);
+    return await this.appService.createComment(product_id, description);
   }
 }

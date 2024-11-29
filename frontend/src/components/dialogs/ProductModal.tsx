@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { IProduct } from '../interfaces/IProduct';
+import React, { useState, useEffect } from 'react';
+import { IProduct } from '../../interfaces/IProduct';
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button } from '@mui/material';
 
-interface AddProductModalProps {
+interface ProductModalProps {
+  isEdit: boolean;
+  product?: IProduct;
   onClose: () => void;
-  onAddProduct: (product: IProduct) => void;
+  onSubmit: (product: IProduct) => void;
 }
 
-export function AddProductModal({ onClose, onAddProduct }: AddProductModalProps) {
+export function ProductModal({ isEdit, product, onClose, onSubmit }: ProductModalProps) {
   const [productDetails, setProductDetails] = useState<IProduct>({
     id: Date.now(),
     name: '',
@@ -20,6 +22,12 @@ export function AddProductModal({ onClose, onAddProduct }: AddProductModalProps)
     weight: '',
     comments: [],
   });
+
+  useEffect(() => {
+    if (isEdit && product) {
+      setProductDetails(product);
+    }
+  }, [isEdit, product]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -54,16 +62,16 @@ export function AddProductModal({ onClose, onAddProduct }: AddProductModalProps)
         productDetails.size.height >= 0 &&
         productDetails.weight
     ) {
-      onAddProduct(productDetails);
+      onSubmit(productDetails);
       onClose();
     } else {
-      alert('All fields must be filled');
+      alert('Incorrect input data');
     }
   };
 
   return (
       <Dialog open onClose={onClose}>
-        <DialogTitle>Add Product</DialogTitle>
+        <DialogTitle>{isEdit ? 'Edit Product' : 'Add Product'}</DialogTitle>
         <DialogContent>
           <TextField
               autoFocus
@@ -123,7 +131,7 @@ export function AddProductModal({ onClose, onAddProduct }: AddProductModalProps)
             Cancel
           </Button>
           <Button onClick={handleSubmit} color="primary">
-            Add Product
+            {isEdit ? 'Save Changes' : 'Add Product'}
           </Button>
         </DialogActions>
       </Dialog>

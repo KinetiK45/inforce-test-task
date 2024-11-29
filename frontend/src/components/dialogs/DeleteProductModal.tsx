@@ -1,11 +1,11 @@
 import React from 'react';
-import { IProduct } from '../interfaces/IProduct';
+import { IProduct } from '../../interfaces/IProduct';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography } from '@mui/material';
 
 interface DeleteProductModalProps {
   onClose: () => void;
   onDeleteProduct: () => void;
-  product: IProduct | null;
+  product: IProduct | undefined;
 }
 
 export function DeleteProductModal({ onClose, onDeleteProduct, product }: DeleteProductModalProps) {

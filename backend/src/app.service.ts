@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entity/product.entity';
 import { Repository } from 'typeorm';
 import { ProductDto } from './dto/product.dto';
 import { Commend } from './entity/commend.entity';
-import { CreateCommentDto } from './dto/create.comment.dto';
 import { UpdateProductDto } from './dto/update.product.dto';
 import { plainToClass } from 'class-transformer';
 
@@ -52,8 +55,20 @@ export class AppService {
     return { message: `Product with ID ${product_id} deleted successfully` };
   }
 
-  async createComment(product_id: number, createCommentDto: CreateCommentDto) {
-    const { description } = createCommentDto;
+  async deleteComment(comment_id: number) {
+    const comment = await this.commentRepository.findOne({
+      where: { id: comment_id },
+    });
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${comment_id} not found`);
+    }
+    await this.commentRepository.remove(comment);
+    return { message: `Comment with ID ${comment_id} deleted successfully` };
+  }
+
+  async createComment(product_id: number, description: string) {
+    if (description.trim() === '')
+      return new BadRequestException('description is empty');
     const product = await this.productRepository.findOne({
       where: { id: product_id },
       relations: ['comments'],
@@ -62,8 +77,8 @@ export class AppService {
       throw new NotFoundException(`Product with ID ${product_id} not found`);
     }
     const comment = new Commend(description);
-    product.addComment(comment);
-    await this.productRepository.save(product);
+    comment.product = product;
+    await this.commentRepository.save(comment);
     return plainToClass(ProductDto, product);
   }
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { AddProductModal } from '../components/AddProductModal';
-import { DeleteProductModal } from '../components/DeleteProductModal';
-import { ProductTable } from '../components/ProductTable';
+import React, { useEffect, useState } from 'react';
+import { ProductModal } from '../components/dialogs/ProductModal';
+import { DeleteProductModal } from '../components/dialogs/DeleteProductModal';
+import { ProductList } from '../components/ProductList';
 import { IProduct } from '../interfaces/IProduct';
 import { Button, Typography, Box } from '@mui/material';
 import { Requests } from '../api/Requests';
@@ -11,7 +11,7 @@ export function ProductsListView() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showDeleteProductModal, setShowDeleteProductModal] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<IProduct | null>(null);
+  const [targetProduct, setTargetProduct] = useState<IProduct | undefined>(undefined);
   const [sortField, setSortField] = useState<keyof IProduct>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -24,15 +24,12 @@ export function ProductsListView() {
     }
   };
 
-  const debouncedFetchProducts = useCallback(
-      debounce((sortBy, sortOrder) => fetchProducts(sortBy, sortOrder), 300),
-      []
-  );
+  const debouncedFetchProducts = debounce((sortBy, sortOrder) => fetchProducts(sortBy, sortOrder), 300);
 
   useEffect(() => {
     debouncedFetchProducts(sortField, sortOrder);
     return debouncedFetchProducts.cancel;
-  }, [sortField, sortOrder, debouncedFetchProducts]);
+  }, [sortField, sortOrder]);
 
   const handleAddProduct = async (newProduct: IProduct) => {
     try {
@@ -45,12 +42,12 @@ export function ProductsListView() {
   };
 
   const handleDeleteProduct = async () => {
-    if (productToDelete) {
+    if (targetProduct) {
       try {
-        await Requests.deleteProduct(productToDelete.id);
+        await Requests.deleteProduct(targetProduct.id);
         debouncedFetchProducts(sortField, sortOrder);
         setShowDeleteProductModal(false);
-        setProductToDelete(null);
+        setTargetProduct(undefined);
       } catch (error) {
         console.error('Failed to delete product:', error);
       }
@@ -68,32 +65,23 @@ export function ProductsListView() {
           Products List
         </Typography>
 
-        <Box sx={{ marginBottom: 2 }}>
-          <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setShowAddProductModal(true)}
-          >
-            Add Product
-          </Button>
-        </Box>
-
-        <ProductTable
+        <ProductList
             products={products}
+            onAdd={() => setShowAddProductModal(true)}
             onDelete={(product) => {
-              setProductToDelete(product);
+              setTargetProduct(product);
               setShowDeleteProductModal(true);
             }}
-            onEdit={(product) => console.log('Edit Product:', product)}
             onSortChange={handleSortChange}
             sortField={sortField}
             sortOrder={sortOrder}
         />
 
         {showAddProductModal && (
-            <AddProductModal
+            <ProductModal
+                isEdit={false}
                 onClose={() => setShowAddProductModal(false)}
-                onAddProduct={handleAddProduct}
+                onSubmit={handleAddProduct}
             />
         )}
 
@@ -101,7 +89,7 @@ export function ProductsListView() {
             <DeleteProductModal
                 onClose={() => setShowDeleteProductModal(false)}
                 onDeleteProduct={handleDeleteProduct}
-                product={productToDelete}
+                product={targetProduct}
             />
         )}
       </Box>

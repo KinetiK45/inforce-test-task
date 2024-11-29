@@ -52,4 +52,9 @@ export class Requests {
     );
     return resp.data;
   }
+
+  static async deleteComment(comment_id: number | string) {
+    const resp = await axiosInstance.delete(`/comments/${comment_id}`);
+    return resp.data;
+  }
 }
